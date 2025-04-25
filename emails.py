@@ -14,20 +14,16 @@ data = pd.read_excel(EXCEL_FILE)
 print(data.columns)
 
 def send_email(to_email, recipient_name):
+    # Initialize the EmailMessage object
     msg = EmailMessage()
-    msg['Subject'] = "Internship Opportunity – Computer Science Undergraduate | Full-Stack Development & AI"
+    msg['Subject'] = "Internship Opportunity – Thushan Madarasinghe"
     msg['From'] = YOUR_EMAIL
     msg['To'] = to_email
 
-    # Plain-text fallback
-    msg.set_content("This is a fallback message for email clients that do not support HTML.")
-
-    # HTML Email Body with clickable buttons
-    greeting = "Dear Sir/Madam,"
     html_body = f"""
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <p>{greeting}</p>
+        <p>Dear Sir/Madam,</p>
 
         <p>
           I hope this message finds you well.<br><br>
@@ -47,7 +43,7 @@ def send_email(to_email, recipient_name):
         </ul>
 
         <p>
-          I am proficient in technologies such as Java, JavaScript, React Native, React.js, Node.js, Express.js, MongoDB, MySQL and GIT. With leadership experience from university projects and extracurricular activities such as IEEE Computer Society, Richmond College IT Society and Richmond Live , I have honed strong teamwork and project management skills.
+          I am proficient in technologies such as Java, JavaScript, React Native, React.js, Node.js, Express.js, MongoDB, MySQL and GIT. With leadership experience from university projects and extracurricular activities such as IEEE Computer Society, Richmond College IT Society and Richmond Live, I have honed strong teamwork and project management skills.
         </p>
 
         <p>
@@ -65,16 +61,10 @@ def send_email(to_email, recipient_name):
           ✉️ thushan.dev03@gmail.com
         </p>
 
-        <p>
-          <a href="https://github.com/ThushanMadu" style="text-decoration:none;">
-            <button style="padding: 8px 14px; margin: 5px; background-color: #333; color: white; border: none; border-radius: 5px;">GitHub</button>
-          </a>
-          <a href="https://thushanmadu.me" style="text-decoration:none;">
-            <button style="padding: 8px 14px; margin: 5px; background-color: #007acc; color: white; border: none; border-radius: 5px;">Portfolio</button>
-          </a>
-          <a href="https://linkedin.com/in/thushan-madarasinghe-420810222" style="text-decoration:none;">
-            <button style="padding: 8px 14px; margin: 5px; background-color: #0a66c2; color: white; border: none; border-radius: 5px;">LinkedIn</button>
-          </a>
+        <p style="text-align: left; font-size: 14px;">
+          <a href="https://github.com/ThushanMadu" style="text-decoration:none; color: #007acc;">GitHub</a> |
+          <a href="https://thushanmadu.me" style="text-decoration:none; color: #007acc;">Portfolio</a> |
+          <a href="https://linkedin.com/in/thushan-madarasinghe-420810222" style="text-decoration:none; color: #007acc;">LinkedIn</a>
         </p>
       </body>
     </html>
