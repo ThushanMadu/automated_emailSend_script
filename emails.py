@@ -1,95 +1,148 @@
 import smtplib
 import pandas as pd
 from email.message import EmailMessage
+import os # Import the os module to check file existence
 
 # === CONFIGURATION ===
-YOUR_EMAIL = "thushan.dev03@gmail.com"           # <- your Gmail
-APP_PASSWORD = "vmnoemngkaytoyji"   # <- your Gmail app password
-CV_FILE = "Thushan_Madarasinghe.pdf"       # <- your CV filename
-EXCEL_FILE = "test.xlsx"  # <- Excel file with emails
-COVER_LETTER = "Thushan_Madarasinghe_coverLetter.pdf"  # Ensure the correct file extension
+# Your Gmail address
+YOUR_EMAIL = "thushanmadu2003@gmail.com"
+# Your Gmail app password (NOT your regular Gmail password)
+# You need to generate an app password in your Google Account security settings.
+APP_PASSWORD = "Wzxwkuiwwwveoolo"
+# Filename of your CV (must be in the same directory as the script, or provide full path)
+CV_FILE = "Thushan_Madarasinghe.pdf"
+# Filename of your Excel file with emails (must be in the same directory as the script, or provide full path)
+# Ensure the column containing emails is named exactly "Email Address" or update the script accordingly.
+EXCEL_FILE = "test.xlsx"
+# Filename of your Cover Letter (This variable is no longer used for attachment,
+# but kept here for reference if you want to include the text in the body)
+# COVER_LETTER_FILE = "Thushan_Madarasinghe_coverLetter.pdf" # Commented out as it's not attached
 
-# Load emails from Excel
-data = pd.read_excel(EXCEL_FILE)
-print(data.columns)
+# --- Email Content ---
+# Subject line for the email
+SUBJECT = " Inquiry Regarding Internship Opportunities – Computer Science Undergraduate"
 
-def send_email(to_email, recipient_name):
-    # Initialize the EmailMessage object
+# HTML body of the email
+# This includes the humanized cover letter text you refined earlier.
+HTML_BODY = f"""
+<html>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <p>Dear Sir/Madam,</p>
+
+    <p>Hope you're having a good week.</p>
+
+    <p>My name is Thushan Madarasinghe, a Computer Science undergraduate at the Informatics Institute of Technology (IIT), affiliated with the University of Westminster. I'm writing to express my strong interest in an internship opportunity with your esteemed organization.</p>
+
+    <p>I'm genuinely impressed by your company's commitment to excellence and nurturing new talent. I'm eager to contribute to the impactful work you're doing, which feels like a fantastic next step for me.</p>
+
+    <p>My studies have provided a solid foundation in Object-Oriented Programming, Algorithms, and Data Structures. I'm proficient in technologies including Java, React Native, Node.js, Express.js, React, MongoDB, SQL, and HTML/CSS, and I'm comfortable with Git for version control. I also have a good understanding of backend development, including APIs and database management.</p>
+
+    <p>I enjoy tackling new technologies and figuring things out across the full stack, bringing different components together to build functional solutions.</p>
+
+    <p>Key projects I've worked on include:</p>
+    <ul>
+      <li><strong>GoviShakthi:</strong> An AI-powered MERN stack app with LLM integration for product recommendations.</li>
+      <li><strong>FinTrack:</strong> A personal finance tracker built with the MERN stack.</li>
+      <li><strong>Real-Time Ticketing System:</strong> Developed using Node.js, React.js, and WebSockets.</li>
+      <li><strong>Plane Management System:</strong> A project built using Java.</li>
+    </ul>
+
+    <p>My involvement with the IEEE Computer Society at university has also enhanced my communication, organization, and teamwork skills through various events.</p>
+
+    <p>I'm eager to bring my energy, technical skills, and passion for learning to your team. Please find my CV attached for your review. I would be grateful for the chance to discuss how I could contribute. If there aren't any suitable openings right now, I'd be thankful if you'd keep my application in mind and let me know about any future opportunities that might come up.</p>
+
+    <p>Thank you for your time and consideration.</p>
+
+    <p>Sincerely,</p>
+
+    <p><strong>Thushan Madarasinghe</strong><br>
+    +94 70 392 1791<br>
+    <a href="mailto:thushanmadu2003@gmail.com">thushanmadu2003@gmail.com</a><br>
+    <a href="https://github.com/ThushanMadu">GitHub</a> |
+    <a href="https://thushanmadu.me">Portfolio</a> |
+    <a href="https://linkedin.com/in/thushan-madarasinghe-420810222">LinkedIn</a>
+    </p>
+  </body>
+</html>
+"""
+
+# --- Function to send a single email ---
+def send_email(to_email):
+    """Sends an email to a single recipient."""
     msg = EmailMessage()
-    msg['Subject'] = "Internship Opportunity – Thushan Madarasinghe"
+    msg['Subject'] = SUBJECT
     msg['From'] = YOUR_EMAIL
     msg['To'] = to_email
 
-    html_body = f"""
-    <html>
-      <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <p>Dear Sir/Madam,</p>
+    # Add the HTML body
+    msg.add_alternative(HTML_BODY, subtype='html')
 
-        <p>
-          I hope this message finds you well.<br><br>
-          My name is <strong>Thushan Madarasinghe</strong>, and I am a second-year Computer Science undergraduate at the University of Westminster (IIT Sri Lanka). I am currently seeking internship opportunities where I can apply my skills in full-stack development, mobile app development, and AI-driven solutions to contribute meaningfully to innovative projects.
-        </p>
-
-        <p>
-          I am particularly excited by opportunities to work in dynamic, technology-driven environments where impactful software solutions are built using modern engineering practices.
-        </p>
-
-        <p><strong>Some of my key projects include:</strong></p>
-        <ul>
-          <li><strong>Real-Time Ticketing System</strong> (Node.js, React.js, WebSockets): Built a scalable event ticketing platform using producer-consumer patterns and real-time data updates.</li>
-          <li><strong>GoviShakthi</strong> – AI-Powered Product Recommendation App (MERN Stack, LLM-based Analysis): Leading the mobile app development and contributing to backend API integration to support farmers with intelligent market insights.</li>
-          <li><strong>FinTrack</strong> – Personal Finance Tracker (MERN Stack): Developed a full-stack finance management application featuring secure authentication, data visualization, and real-time transaction tracking.</li>
-          <li><strong>Plane Management System</strong> (Java): Built a robust flight seat reservation console application with search, ticketing, and reporting functionalities.</li>
-        </ul>
-
-        <p>
-          I am proficient in technologies such as Java, JavaScript, React Native, React.js, Node.js, Express.js, MongoDB, MySQL and GIT. With leadership experience from university projects and extracurricular activities such as IEEE Computer Society, Richmond College IT Society and Richmond Live, I have honed strong teamwork and project management skills.
-        </p>
-
-        <p>
-          I am eager to learn, adapt, and contribute to your organization’s success through my passion for building user-centered, high-quality solutions.
-        </p>
-
-        <p>
-          Thank you for considering my application. I look forward to the possibility of contributing to your team.
-        </p>
-
-        <p>
-          Best regards,<br>
-          <strong>Thushan Madarasinghe</strong><br>
-          📞 +94 70 392 1791<br>
-          ✉️ thushan.dev03@gmail.com
-        </p>
-
-        <p style="text-align: left; font-size: 14px;">
-          <a href="https://github.com/ThushanMadu" style="text-decoration:none; color: #007acc;">GitHub</a> |
-          <a href="https://thushanmadu.me" style="text-decoration:none; color: #007acc;">Portfolio</a> |
-          <a href="https://linkedin.com/in/thushan-madarasinghe-420810222" style="text-decoration:none; color: #007acc;">LinkedIn</a>
-        </p>
-      </body>
-    </html>
-    """
-
-    msg.add_alternative(html_body, subtype='html')
-
-    # Attach CV
+    # Attach CV file
+    if not os.path.exists(CV_FILE):
+        print(f"Error: CV file not found at {CV_FILE}")
+        return False # Indicate failure
     with open(CV_FILE, 'rb') as f:
-        msg.add_attachment(f.read(), maintype='application', subtype='pdf', filename=CV_FILE)
+        msg.add_attachment(f.read(), maintype='application', subtype='pdf', filename=os.path.basename(CV_FILE))
 
-    # Attach Cover Letter
-    with open(COVER_LETTER, 'rb') as f:
-        msg.add_attachment(f.read(), maintype='application', subtype='pdf', filename=f"{COVER_LETTER}.pdf")
-
-    # Send the message
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(YOUR_EMAIL, APP_PASSWORD)
-        smtp.send_message(msg)
-
-# === Sending loop ===
-for index, row in data.iterrows():
-    email = row["Email Address"]  # Replace "email" with the correct column name
+    # Send the message using SMTP
     try:
-        send_email(email, "Sir/Madam")
-        print(f"✅ Sent to {email}")
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(YOUR_EMAIL, APP_PASSWORD)
+            smtp.send_message(msg)
+        return True # Indicate success
     except Exception as e:
-        print(f"❌ Failed to send to {email}: {e}")
+        print(f"SMTP Error: {e}")
+        return False # Indicate failure
+
+
+# === Main execution block ===
+if __name__ == "__main__":
+    # Check if Excel file exists
+    if not os.path.exists(EXCEL_FILE):
+        print(f"Error: Excel file not found at {EXCEL_FILE}")
+    else:
+        # Load emails from Excel
+        try:
+            data = pd.read_excel(EXCEL_FILE)
+
+            # Add a 'Status' column if it doesn't exist
+            if 'Status' not in data.columns:
+                data['Status'] = '' # Initialize with empty strings
+
+            # Check if the "Email Address" column exists
+            if "Email Address" not in data.columns:
+                print(f"Error: Column 'Email Address' not found in {EXCEL_FILE}. Please check the column name.")
+            else:
+                print(f"Loaded {len(data)} rows from {EXCEL_FILE}")
+                # Iterate through each row (each email address)
+                for index, row in data.iterrows():
+                    email = row["Email Address"] # Get email from the specified column
+                    # Only attempt to send if the email is not empty and status is not already 'Sent' or 'Failed'
+                    if pd.notna(email) and str(email).strip() != "" and row['Status'] not in ['Sent', 'Failed']:
+                        email_str = str(email).strip() # Ensure email is a string and strip whitespace
+                        print(f"Attempting to send to: {email_str}")
+                        if send_email(email_str):
+                            print(f"✅ Sent successfully to {email_str}")
+                            data.loc[index, 'Status'] = 'Sent' # Update status in DataFrame
+                        else:
+                            print(f"❌ Failed to send to {email_str}")
+                            data.loc[index, 'Status'] = 'Failed' # Update status in DataFrame
+                    elif pd.notna(email) and str(email).strip() != "":
+                         print(f"Skipping row {index} ({email}): Status already '{row['Status']}'.")
+                    else:
+                        print(f"Skipping row {index}: No valid email address found.")
+
+                # Save the updated DataFrame back to the Excel file
+                try:
+                    data.to_excel(EXCEL_FILE, index=False) # index=False prevents writing the DataFrame index as a column
+                    print(f"Updated status in {EXCEL_FILE}")
+                except Exception as e:
+                    print(f"Error saving updated Excel file: {e}")
+
+
+        except FileNotFoundError:
+             # This case is already handled by os.path.exists, but good to have
+            print(f"Error: Excel file not found at {EXCEL_FILE}")
+        except Exception as e:
+            print(f"An error occurred while processing the Excel file: {e}")
+
