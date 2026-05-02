@@ -53,6 +53,8 @@ APP_PASSWORD=your16characterapppassword
 
 ### 5. Prepare Your Files
 
+**Important:** The script modifies the Excel file in-place by adding and updating a `Status` column. **Always keep a backup copy of your original spreadsheet before running the script.**
+
 Place these files in the project root:
 
 - **Excel file** (`test.xlsx`): Must contain a column named exactly `"Email Address"`
@@ -92,7 +94,7 @@ Your Excel file should have at least this column:
 | company1@email.com |
 | company2@email.com |
 
-The script automatically adds a `Status` column to track sent emails.
+The script automatically adds a `Status` column to track sent emails. **This modifies your original file** - always keep a backup copy before running.
 
 ## Project Structure
 

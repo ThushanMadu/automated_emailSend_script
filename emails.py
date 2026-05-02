@@ -1,4 +1,5 @@
 import os
+import json
 import smtplib
 from email.message import EmailMessage
 
@@ -35,21 +36,12 @@ if not YOUR_EMAIL or not APP_PASSWORD:
          "Set them in the process environment or in the local .env file."
     )
 
-# Filename of your CV (must be in the same directory as the script, or provide full path)
-CV_FILE = "Thushan_Madarasinghe.pdf"
-# Filename of your Excel file with emails (must be in the same directory as the script, or provide full path)
-# Ensure the column containing emails is named exactly "Email Address" or update the script accordingly.
+CV_FILE = "your_cv.pdf"
 EXCEL_FILE = "test.xlsx"
-# Filename of your Cover Letter (This variable is no longer used for attachment,
-# but kept here for reference if you want to include the text in the body)
-# COVER_LETTER_FILE = "Thushan_Madarasinghe_coverLetter.pdf" # Commented out as it's not attached
+CHECKPOINT_FILE = "email_checkpoint.json"
 
-# --- Email Content ---
-# Subject line for the email
 SUBJECT = " Inquiry Regarding Internship Opportunities – Computer Science Undergraduate"
 
-# HTML body of the email
-# This includes the humanized cover letter text you refined earlier.
 HTML_BODY = f"""
 <html>
   <body style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -92,7 +84,24 @@ HTML_BODY = f"""
 </html>
 """
 
-# --- Function to send a single email ---
+
+def load_checkpoint():
+    """Load progress from JSON checkpoint file."""
+    if os.path.exists(CHECKPOINT_FILE):
+        try:
+            with open(CHECKPOINT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            return {}
+    return {}
+
+
+def save_checkpoint(checkpoint):
+    """Save progress to JSON checkpoint file."""
+    with open(CHECKPOINT_FILE, "w", encoding="utf-8") as f:
+        json.dump(checkpoint, f, indent=2)
+
+
 def send_email(to_email):
     """Sends an email to a single recipient."""
     msg = EmailMessage()
@@ -100,75 +109,80 @@ def send_email(to_email):
     msg['From'] = YOUR_EMAIL
     msg['To'] = to_email
 
-    # Add the HTML body
     msg.add_alternative(HTML_BODY, subtype='html')
 
-    # Attach CV file
     if not os.path.exists(CV_FILE):
         print(f"Error: CV file not found at {CV_FILE}")
-        return False # Indicate failure
+        return False
     with open(CV_FILE, 'rb') as f:
         msg.add_attachment(f.read(), maintype='application', subtype='pdf', filename=os.path.basename(CV_FILE))
 
-    # Send the message using SMTP
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
             smtp.login(YOUR_EMAIL, APP_PASSWORD)
             smtp.send_message(msg)
-        return True # Indicate success
+        return True
     except Exception as e:
         print(f"SMTP Error: {e}")
-        return False # Indicate failure
+        return False
 
 
-# === Main execution block ===
 if __name__ == "__main__":
-    # Check if Excel file exists
     if not os.path.exists(EXCEL_FILE):
         print(f"Error: Excel file not found at {EXCEL_FILE}")
     else:
-        # Load emails from Excel
         try:
             data = pd.read_excel(EXCEL_FILE)
 
-            # Add a 'Status' column if it doesn't exist
             if 'Status' not in data.columns:
-                data['Status'] = '' # Initialize with empty strings
+                data['Status'] = ''
 
-            # Check if the "Email Address" column exists
             if "Email Address" not in data.columns:
                 print(f"Error: Column 'Email Address' not found in {EXCEL_FILE}. Please check the column name.")
             else:
+                checkpoint = load_checkpoint()
                 print(f"Loaded {len(data)} rows from {EXCEL_FILE}")
-                # Iterate through each row (each email address)
+                
+                if checkpoint:
+                    print(f"Resuming from checkpoint ({len(checkpoint)} entries)")
+                    for idx_str, status in checkpoint.items():
+                        data.loc[int(idx_str), 'Status'] = status
+
                 for index, row in data.iterrows():
-                    email = row["Email Address"] # Get email from the specified column
-                    # Only attempt to send if the email is not empty and status is not already 'Sent' or 'Failed'
-                    if pd.notna(email) and str(email).strip() != "" and row['Status'] not in ['Sent', 'Failed']:
-                        email_str = str(email).strip() # Ensure email is a string and strip whitespace
+                    idx_str = str(index)
+                    email = row["Email Address"]
+                    
+                    if idx_str in checkpoint:
+                        print(f"Skipping row {index} ({email}): Already in checkpoint.")
+                        continue
+                        
+                    if pd.notna(email) and str(email).strip() != "":
+                        if row['Status'] in ['Sent', 'Failed']:
+                            print(f"Skipping row {index} ({email}): Status already '{row['Status']}'.")
+                            continue
+                            
+                        email_str = str(email).strip()
                         print(f"Attempting to send to: {email_str}")
                         if send_email(email_str):
                             print(f"✅ Sent successfully to {email_str}")
-                            data.loc[index, 'Status'] = 'Sent' # Update status in DataFrame
+                            data.loc[index, 'Status'] = 'Sent'
+                            checkpoint[idx_str] = 'Sent'
                         else:
                             print(f"❌ Failed to send to {email_str}")
-                            data.loc[index, 'Status'] = 'Failed' # Update status in DataFrame
-                    elif pd.notna(email) and str(email).strip() != "":
-                         print(f"Skipping row {index} ({email}): Status already '{row['Status']}'.")
+                            data.loc[index, 'Status'] = 'Failed'
+                            checkpoint[idx_str] = 'Failed'
+                        save_checkpoint(checkpoint)
                     else:
                         print(f"Skipping row {index}: No valid email address found.")
 
-                # Save the updated DataFrame back to the Excel file
                 try:
-                    data.to_excel(EXCEL_FILE, index=False) # index=False prevents writing the DataFrame index as a column
-                    print(f"Updated status in {EXCEL_FILE}")
+                    data.to_excel(EXCEL_FILE, index=False)
+                    print(f"Processing complete. Status saved to {EXCEL_FILE}")
+                    if os.path.exists(CHECKPOINT_FILE):
+                        os.remove(CHECKPOINT_FILE)
                 except Exception as e:
-                    print(f"Error saving updated Excel file: {e}")
+                    print(f"❌ Error saving Excel file: {e}")
+                    print(f"Progress preserved in {CHECKPOINT_FILE}. Run again to resume.")
 
-
-        except FileNotFoundError:
-             # This case is already handled by os.path.exists, but good to have
-            print(f"Error: Excel file not found at {EXCEL_FILE}")
         except Exception as e:
             print(f"An error occurred while processing the Excel file: {e}")
-
