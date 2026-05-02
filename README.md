@@ -197,7 +197,7 @@ The script uses `email_checkpoint.json` to track progress:
 - **Crash recovery:** If the script crashes, just run it again. It resumes where it stopped
 - **Safe interruption:** Press `Ctrl+C` to stop. Run again to resume
 - **Duplicate prevention:** Already sent emails are never resent
-- **Auto-cleanup:** The checkpoint file is deleted when all emails are sent successfully
+- **Auto-cleanup:** The checkpoint file is deleted after the run completes and the Excel file is updated, even if some rows are marked `Failed`
 
 ## Security Notes
 
