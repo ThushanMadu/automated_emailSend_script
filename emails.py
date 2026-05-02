@@ -29,6 +29,17 @@ load_env_file(os.path.join(os.path.dirname(__file__), ".env"))
 # === CONFIGURATION ===
 YOUR_EMAIL = os.environ.get("YOUR_EMAIL", "")
 APP_PASSWORD = os.environ.get("APP_PASSWORD", "")
+APPLICANT_NAME = os.environ.get("APPLICANT_NAME", "")
+APPLICANT_PHONE = os.environ.get("APPLICANT_PHONE", "")
+APPLICANT_UNIVERSITY = os.environ.get("APPLICANT_UNIVERSITY", "")
+APPLICANT_MAJOR = os.environ.get("APPLICANT_MAJOR", "")
+GITHUB_URL = os.environ.get("GITHUB_URL", "")
+PORTFOLIO_URL = os.environ.get("PORTFOLIO_URL", "")
+LINKEDIN_URL = os.environ.get("LINKEDIN_URL", "")
+CV_FILE = os.environ.get("CV_FILE", "your_cv.pdf")
+EXCEL_FILE = os.environ.get("EXCEL_FILE", "recipients.xlsx")
+CHECKPOINT_FILE = "email_checkpoint.json"
+EMAIL_SUBJECT = os.environ.get("EMAIL_SUBJECT", "Inquiry Regarding Opportunities")
 
 if not YOUR_EMAIL or not APP_PASSWORD:
     raise ValueError(
@@ -36,11 +47,8 @@ if not YOUR_EMAIL or not APP_PASSWORD:
          "Set them in the process environment or in the local .env file."
     )
 
-CV_FILE = "your_cv.pdf"
-EXCEL_FILE = "test.xlsx"
-CHECKPOINT_FILE = "email_checkpoint.json"
-
-SUBJECT = " Inquiry Regarding Internship Opportunities – Computer Science Undergraduate"
+if not APPLICANT_NAME:
+    raise ValueError("Missing APPLICANT_NAME environment variable.")
 
 HTML_BODY = f"""
 <html>
@@ -49,7 +57,7 @@ HTML_BODY = f"""
 
     <p>Hope you're having a good week.</p>
 
-    <p>My name is Thushan Madarasinghe, a Computer Science undergraduate at the Informatics Institute of Technology (IIT), affiliated with the University of Westminster. I'm writing to express my strong interest in an internship opportunity with your esteemed organization.</p>
+    <p>My name is {APPLICANT_NAME}, a {APPLICANT_MAJOR} at the {APPLICANT_UNIVERSITY}. I'm writing to express my strong interest in an internship opportunity with your esteemed organization.</p>
 
     <p>I'm genuinely impressed by your company's commitment to excellence and nurturing new talent. I'm eager to contribute to the impactful work you're doing, which feels like a fantastic next step for me.</p>
 
@@ -73,12 +81,12 @@ HTML_BODY = f"""
 
     <p>Sincerely,</p>
 
-    <p><strong>Thushan Madarasinghe</strong><br>
-    +94 70 392 1791<br>
+    <p><strong>{APPLICANT_NAME}</strong><br>
+    {APPLICANT_PHONE}<br>
     <a href="mailto:{YOUR_EMAIL}">{YOUR_EMAIL}</a><br>
-    <a href="https://github.com/ThushanMadu">GitHub</a> |
-    <a href="https://thushanmadu.me">Portfolio</a> |
-    <a href="https://linkedin.com/in/thushan-madarasinghe-420810222">LinkedIn</a>
+    <a href="{GITHUB_URL}">GitHub</a> |
+    <a href="{PORTFOLIO_URL}">Portfolio</a> |
+    <a href="{LINKEDIN_URL}">LinkedIn</a>
     </p>
   </body>
 </html>
@@ -105,7 +113,7 @@ def save_checkpoint(checkpoint):
 def send_email(to_email):
     """Sends an email to a single recipient."""
     msg = EmailMessage()
-    msg['Subject'] = SUBJECT
+    msg['Subject'] = EMAIL_SUBJECT
     msg['From'] = YOUR_EMAIL
     msg['To'] = to_email
 
