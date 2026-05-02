@@ -76,7 +76,9 @@ cp .env.example .env
 ```env
 # SMTP Configuration
 YOUR_EMAIL=yourgmail@gmail.com
-APP_PASSWORD=abcd efgh ijkl mnop (Example)
+# Gmail App Password (16-character app password from Google)
+# Example format: abcd efgh ijkl mnop
+APP_PASSWORD="your_app_password"
 
 # Applicant Personal Information
 APPLICANT_NAME="Your Full Name"
