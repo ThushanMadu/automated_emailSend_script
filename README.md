@@ -9,7 +9,8 @@ A Python-based bulk email sending tool that reads recipient addresses from an Ex
 - Attaches PDF documents (CV/resume) automatically
 - Tracks send status (Sent/Failed) in the Excel file
 - Safe to re-run without sending duplicate emails
-- Loads credentials from `.env` file
+- Loads credentials and personal data from `.env` file
+- JSON-based checkpointing for crash recovery
 
 ## Prerequisites
 
@@ -34,14 +35,39 @@ pip install pandas openpyxl
 
 ### 3. Create `.env` File
 
-Create a `.env` file in the project root with your Gmail credentials:
+Copy the example file and fill in your details:
 
-```env
-YOUR_EMAIL=yourgmail@gmail.com
-APP_PASSWORD=your16characterapppassword
+```bash
+cp .env.example .env
 ```
 
-**Important:** The `.env` file is gitignored to protect your credentials.
+Edit `.env` with your information:
+
+```env
+# SMTP Configuration
+YOUR_EMAIL=yourgmail@gmail.com
+APP_PASSWORD=your16characterapppassword
+
+# Applicant Personal Information
+APPLICANT_NAME="Your Full Name"
+APPLICANT_PHONE="+1 000 000 0000"
+APPLICANT_UNIVERSITY="Your University Name"
+APPLICANT_MAJOR="Your Major/Degree"
+
+# Links
+GITHUB_URL="https://github.com/yourusername"
+PORTFOLIO_URL="https://yourportfolio.com"
+LINKEDIN_URL="https://linkedin.com/in/yourusername"
+
+# File Configuration
+CV_FILE="your_cv.pdf"
+EXCEL_FILE="recipients.xlsx"
+
+# Email Configuration
+EMAIL_SUBJECT="Inquiry Regarding Internship Opportunities"
+```
+
+**Important:** The `.env` file is gitignored to protect your credentials and personal data.
 
 ### 4. Generate Gmail App Password
 
@@ -57,33 +83,8 @@ APP_PASSWORD=your16characterapppassword
 
 Place these files in the project root:
 
-- **Excel file** (`test.xlsx`): Must contain a column named exactly `"Email Address"`
-- **Your CV**: Add your CV/resume as a PDF file and update the `CV_FILE` variable in `emails.py` with the filename
-
-## Usage
-
-Run the script:
-
-```bash
-python emails.py
-```
-
-The script will:
-1. Load all email addresses from the Excel file
-2. Send emails one by one via Gmail SMTP
-3. Update the Excel file with send status (Sent/Failed)
-4. Skip already processed emails on re-runs
-
-## Configuration
-
-Edit these variables in `emails.py` to customize:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `CV_FILE` | Path to your CV PDF | `your_cv.pdf` |
-| `EXCEL_FILE` | Path to your email list | `test.xlsx` |
-| `SUBJECT` | Email subject line | Internship inquiry subject |
-| `HTML_BODY` | Email content (HTML) | Cover letter template |
+- **Excel file**: Set `EXCEL_FILE` in `.env` (default: `recipients.xlsx`). Must contain a column named exactly `"Email Address"`
+- **Your CV**: Add your CV/resume as a PDF file and set `CV_FILE` in `.env` (default: `your_cv.pdf`)
 
 ## Excel File Format
 
@@ -96,28 +97,72 @@ Your Excel file should have at least this column:
 
 The script automatically adds a `Status` column to track sent emails. **This modifies your original file** - always keep a backup copy before running.
 
+## Usage
+
+Run the script:
+
+```bash
+python emails.py
+```
+
+The script will:
+1. Load all email addresses from the Excel file
+2. Send emails one by one via Gmail SMTP
+3. Save progress to a JSON checkpoint file after each email
+4. Update the Excel file with send status (Sent/Failed) at the end
+5. Skip already processed emails on re-runs
+
+## Configuration
+
+All configuration is done via the `.env` file:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `YOUR_EMAIL` | Gmail address to send from | Yes |
+| `APP_PASSWORD` | Gmail App Password | Yes |
+| `APPLICANT_NAME` | Your full name | Yes |
+| `APPLICANT_PHONE` | Your phone number | Yes |
+| `APPLICANT_UNIVERSITY` | Your university name | Yes |
+| `APPLICANT_MAJOR` | Your degree/major | Yes |
+| `GITHUB_URL` | Link to your GitHub profile | Yes |
+| `PORTFOLIO_URL` | Link to your portfolio website | Yes |
+| `LINKEDIN_URL` | Link to your LinkedIn profile | Yes |
+| `CV_FILE` | Filename of your CV PDF | Yes |
+| `EXCEL_FILE` | Filename of your email list | Yes |
+| `EMAIL_SUBJECT` | Subject line of the email | Yes |
+
 ## Project Structure
 
 ```
 automated_emailSend_script/
 ├── emails.py                    # Main script
-├── test.xlsx                    # Recipient email list
+├── recipients.xlsx              # Recipient email list (add yours)
 ├── your_cv.pdf                  # Your CV attachment (add yours)
-├── .env                         # Credentials (create this)
+├── .env                         # Credentials (create from .env.example)
+├── .env.example                 # Template for environment variables
+├── email_checkpoint.json        # Auto-generated progress checkpoint
 ├── .gitignore
 └── README.md
 ```
+
+## Checkpointing
+
+The script uses a JSON checkpoint file (`email_checkpoint.json`) to track progress. This allows you to safely interrupt the script (CTRL+C) or recover from a crash without resending emails to recipients who have already been contacted. The checkpoint is automatically deleted when all emails are sent successfully.
 
 ## Security Notes
 
 - Never commit your `.env` file
 - Keep your Gmail App Password secure
 - The script uses SMTP SSL (port 465) for encrypted connections
+- All personal data is stored in `.env`, not hardcoded in the script
 
 ## Troubleshooting
 
 **"Missing YOUR_EMAIL or APP_PASSWORD"**
 - Check that your `.env` file exists and contains both variables
+
+**"Missing APPLICANT_NAME"**
+- Ensure `APPLICANT_NAME` is set in your `.env` file
 
 **"Column 'Email Address' not found"**
 - Ensure your Excel column is named exactly `"Email Address"`
