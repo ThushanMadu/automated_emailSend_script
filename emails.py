@@ -36,7 +36,7 @@ if not YOUR_EMAIL or not APP_PASSWORD:
     )
 
 # Filename of your CV (must be in the same directory as the script, or provide full path)
-CV_FILE = "Thushan_Madarasinghe.pdf"
+CV_FILE = "your_cv.pdf"
 # Filename of your Excel file with emails (must be in the same directory as the script, or provide full path)
 # Ensure the column containing emails is named exactly "Email Address" or update the script accordingly.
 EXCEL_FILE = "test.xlsx"
@@ -92,6 +92,15 @@ HTML_BODY = f"""
 </html>
 """
 
+# --- Function to save progress ---
+def save_progress(dataframe):
+    """Save the current status back to the Excel file."""
+    try:
+        dataframe.to_excel(EXCEL_FILE, index=False)
+    except Exception as e:
+        print(f"Warning: Could not save progress to Excel: {e}")
+
+
 # --- Function to send a single email ---
 def send_email(to_email):
     """Sends an email to a single recipient."""
@@ -145,25 +154,21 @@ if __name__ == "__main__":
                     email = row["Email Address"] # Get email from the specified column
                     # Only attempt to send if the email is not empty and status is not already 'Sent' or 'Failed'
                     if pd.notna(email) and str(email).strip() != "" and row['Status'] not in ['Sent', 'Failed']:
-                        email_str = str(email).strip() # Ensure email is a string and strip whitespace
+                        email_str = str(email).strip()
                         print(f"Attempting to send to: {email_str}")
                         if send_email(email_str):
                             print(f"✅ Sent successfully to {email_str}")
-                            data.loc[index, 'Status'] = 'Sent' # Update status in DataFrame
+                            data.loc[index, 'Status'] = 'Sent'
                         else:
                             print(f"❌ Failed to send to {email_str}")
-                            data.loc[index, 'Status'] = 'Failed' # Update status in DataFrame
+                            data.loc[index, 'Status'] = 'Failed'
+                        save_progress(data)
                     elif pd.notna(email) and str(email).strip() != "":
                          print(f"Skipping row {index} ({email}): Status already '{row['Status']}'.")
                     else:
                         print(f"Skipping row {index}: No valid email address found.")
 
-                # Save the updated DataFrame back to the Excel file
-                try:
-                    data.to_excel(EXCEL_FILE, index=False) # index=False prevents writing the DataFrame index as a column
-                    print(f"Updated status in {EXCEL_FILE}")
-                except Exception as e:
-                    print(f"Error saving updated Excel file: {e}")
+                print(f"Processing complete. Status saved in {EXCEL_FILE}")
 
 
         except FileNotFoundError:
